@@ -28,7 +28,7 @@ def crop_roi_image(image_np, sel_box):
     return cropped_image
 
 
-extract_red_area(img):
+def extract_red_area(img):
 
     LOWER_RED = np.array([90-30,30,40])
     UPPER_RED = np.array([90+30,255,255])
@@ -49,7 +49,7 @@ extract_red_area(img):
 
     return mask, largest_area, perimeter
 
-contains_red_light(image):
+def contains_red_light(image):
     # TODO implement light color prediction
     #Parameters
     MIN_AREA_FOR_STOP = 3
