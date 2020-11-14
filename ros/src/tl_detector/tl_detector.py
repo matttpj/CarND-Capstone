@@ -87,7 +87,6 @@ class TLDetector(object):
         """
         self.has_image = True
         self.camera_image = msg
-        light_wp, state = self.process_traffic_lights()
 
         self.cv_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
 
@@ -112,6 +111,9 @@ class TLDetector(object):
 
 
     def update_state(self, state):
+
+        light_wp, true_state = self.process_traffic_lights()
+
         if self.state != state:
             self.state_count = 0
             self.state = state
