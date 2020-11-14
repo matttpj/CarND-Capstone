@@ -49,13 +49,13 @@ def extract_red_area(img):
 
     return mask, largest_area, perimeter
 
-def contains_red_light(image):
+def contains_red_light(img):
     # TODO implement light color prediction
     #Parameters
     MIN_AREA_FOR_STOP = 3
     MIN_COMPACTNESS_FOR_BULB = 0.04
 
-    mask, area, perimeter = extract_red_area(image)
+    mask, area, perimeter = extract_red_area(img)
 
     if area > MIN_AREA_FOR_STOP and area / (perimeter*perimeter) > MIN_COMPACTNESS_FOR_BULB:
         return True
@@ -126,20 +126,18 @@ class TLClassifier(object):
                 tf.import_graph_def(od_graph_def, name='')
         self.detection_graph = detection_graph
 
-    def get_classification(self, image):
+    def get_classification(self, img):
         """Determines the color of the traffic light in the image
 
         Args:
-            image (cv::Mat): image containing the crop of the traffic light
+            img (cv::Mat): image containing the crop of the traffic light
 
         Returns:
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
 
-        mask, area, perimeter = contains_red_light(image)
-
-        if contains_red_light(image):
+        if contains_red_light(img):
             return TrafficLight.RED  # state = 'stop' >> id = 0
         else:
             return TrafficLight.GREEN    # state = 'go' >> id = 2
