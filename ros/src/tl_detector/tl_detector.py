@@ -103,9 +103,9 @@ class TLDetector(object):
         if len(img_crop) == 0:
             state = TrafficLight.UNKNOWN
         else:
-            img_msg = self.cv_bridge.cv2_to_imgmsg(img_crop, encoding="bgr8")
-            self.image_crop.publish(img_msg)
-            state = self.light_classifier.get_classification(img_msg)
+            img_crop_msg = self.cv_bridge.cv2_to_imgmsg(img_crop, encoding="bgr8")
+            self.image_crop.publish(img_crop_msg)
+            state = self.light_classifier.get_classification(img_crop)
 
         self.update_state(state)
 
