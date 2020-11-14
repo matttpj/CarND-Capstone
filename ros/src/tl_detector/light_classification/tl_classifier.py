@@ -28,6 +28,43 @@ def crop_roi_image(image_np, sel_box):
     return cropped_image
 
 
+def extract_red_area(img):
+
+    LOWER_RED = np.array([90-30,30,40])
+    UPPER_RED = np.array([90+30,255,255])
+
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_inv = cv2.bitwise_not(img)
+    hsv=cv2.cvtColor(img_inv, cv2.COLOR_RGB2HSV);
+    mask = cv2.inRange(hsv, LOWER_RED, UPPER_RED)
+    im2, contours,hierarchy = cv2.findContours(mask, 1, 2)
+    largest_area = 0
+    perimeter = 0
+    if(contours):
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area>largest_area:
+                largest_area=area
+                perimeter = cv2.arcLength(contour, True)
+
+    return mask, largest_area, perimeter
+
+def contains_red_light(img):
+    # TODO implement light color prediction
+    #Parameters
+    MIN_AREA_FOR_STOP = 3
+    MIN_COMPACTNESS_FOR_BULB = 0.04
+
+    mask, area, perimeter = extract_red_area(img)
+
+    if area > MIN_AREA_FOR_STOP and area / (perimeter*perimeter) > MIN_COMPACTNESS_FOR_BULB:
+        return True
+    else:
+        return False
+
+
+
+
 class TLClassifier(object):
     def __init__(self):
         self.load_graph()
@@ -89,60 +126,24 @@ class TLClassifier(object):
                 tf.import_graph_def(od_graph_def, name='')
         self.detection_graph = detection_graph
 
-    def get_classification(self, image):
+    def get_classification(self, img):
         """Determines the color of the traffic light in the image
 
         Args:
-            image (cv::Mat): image containing the traffic light
+            img (cv::Mat): image containing the crop of the traffic light
 
         Returns:
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        # TODO implement light color prediction
-        #Parameters
-        MIN_AREA_FOR_STOP = 3
-        MIN_COMPACTNESS_FOR_BULB = 0.04
 
-        mask, area, perimeter = extract_red_area(image)
-
-        if area > MIN_AREA_FOR_STOP and area/(perimeter*perimeter)> MIN_COMPACTNESS_FOR_BULB:
-            state = TrafficLight.RED  # state = 'stop' >> id = 0
-            #print(area/(perimeter*perimeter))
+        if contains_red_light(img):
+            return TrafficLight.RED  # state = 'stop' >> id = 0
         else:
-            state = TrafficLight.GREEN    # state = 'go' >> id = 2
-
-        return state
-
-        #for img in images:
-        #    mask, area, perimeter = extract_red_area(img)
-        #    if area > MIN_AREA_FOR_STOP and area/(perimeter*perimeter)> MIN_COMPACTNESS_FOR_BULB:
-        #        state = 'stop'
-        #        #print(area/(perimeter*perimeter))
-        #    else:
-        #        state = 'go'
+            return TrafficLight.GREEN    # state = 'go' >> id = 2
 
 
-    def extract_red_area(self, img):
 
-        LOWER_RED = np.array([90-30,30,40])
-        UPPER_RED = np.array([90+30,255,255])
-
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img_inv = cv2.bitwise_not(img)
-        hsv=cv2.cvtColor(img_inv, cv2.COLOR_RGB2HSV);
-        mask = cv2.inRange(hsv, LOWER_RED, UPPER_RED)
-        im2, contours,hierarchy = cv2.findContours(mask, 1, 2)
-        largest_area = 0
-        perimeter = 0
-        if(contours):
-            for contour in contours:
-                area = cv2.contourArea(contour)
-                if area>largest_area:
-                    largest_area=area
-                    perimeter = cv2.arcLength(contour, True)
-
-        return mask, largest_area, perimeter
 
     def detect_traffic_light(self, image):
         boxes = self.detect_multi_object(image, score_threshold=0.2)
