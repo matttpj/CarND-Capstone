@@ -101,14 +101,17 @@ class TLDetector(object):
         img_crop = self.light_classifier.detect_traffic_light(self.cv_image)
 
         if len(img_crop) == 0:
-
             state = TrafficLight.UNKNOWN
         else:
             img_msg = self.cv_bridge.cv2_to_imgmsg(img_crop, encoding="bgr8")
             self.image_crop.publish(img_msg)
             state = self.light_classifier.get_classification(img_msg)
 
+        self.update_state(state)
 
+
+
+    def update_state(self, state):
         if self.state != state:
             self.state_count = 0
             self.state = state
@@ -120,6 +123,7 @@ class TLDetector(object):
         else:
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
+
 
     def get_closest_waypoint(self, x, y):
 
