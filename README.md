@@ -1,6 +1,12 @@
 # **Capstone Project: Programming a Real Self Driving Car**
 
-## Team: [Bulat Yapparov](https://github.com/byapparov), [Erik Rosen](https://github.com/erik-rosen), [Matthew Jones](https://github.com/matttpj)
+## Team:
+
+Full name|Email|GitHub profile|
+|--------|---------|-------------|
+Bulat Yapparov|byapparov[ at ]gmail.com|[byapparov](https://github.com/byapparov)
+Erik Rosen|erik.rosen[ at ]coolit.se|[erik-rosen](https://github.com/erik-rosen)
+Matthew Jones|matttpj[ at ]hotmail.com|[matttpj](https://github.com/matttpj)
 
 ## Project summary
 This is the project repo for our team's final project of the Udacity Self-Driving Car Engineer Nanodegree. The **Capstone Project: Programming a Real Self Driving Car** requires the team to write, test and integrate their own code with existing software packages provided by Udacity and other third parties. The team must then run their project code in the Udacity driving simulator. The test vehicle is required to drive safely in autonomous mode in a simulated driving environment and respect various traffic regulations, such as stopping, when required, at traffic lights. If the project code runs successfully in the simulator then the code is tested again on Udacity's real-world self driving car, Carla. For more information about the full Nanodegree program please follow this link [Udacity Self Driving Car Engineer](https://www.udacity.com/course/self-driving-car-engineer-nanodegree--nd013).
@@ -8,7 +14,7 @@ This is the project repo for our team's final project of the Udacity Self-Drivin
 [//]: # (Image References)
 __Output from driving simulator__  
 <img src="./imgs/capstone_car_stopped.jpg" width=100% height=100%>
-[download video](https://github.com/matttpj/CarND-Capstone/raw/master/output_videos/capstone_v02.mp4)
+[download video](https://github.com/erik-rosen/CarND-Capstone/raw/master/output_videos/capstone_v02.mp4)
 
 ## System architecture
 The Capstone Project uses the Robot Operating System or [ROS](https://www.ros.org/) as a framework for its underlying communications infrastructure.
@@ -17,25 +23,48 @@ The diagram below illustrates the key ROS nodes and topics used by the project.
 
 ## Explanation of key software packages
 
-### Twist Controller
+### Control
+
 The Udacity self driving car Carla is equipped with a Drive by Wire (DBW) system which enables its throttle, brake and steering to be controlled electronically.    
+
 **Twist Controller** package contains the key files that are responsible for the control of the vehicle, **dbw_node.py** and **twist_controller.py**.  The DBW node subscribes to the */current_velocity* and */twist_cmd* topics to receive target linear and angular velocities and also subscribes to the */vehicle/dbw_enabled* topic to understand if the vehicle is in autonomous mode and under DBW control.  The DBW node publishes throttle, brake and steering commands to the */vehicle/throttle_cmd*, */vehicle/brake_cmd* and */vehicle/steering_cmd* topics.
 
-### Waypoint Loader, Follower & Updater
-**Waypoint Loader** package loads the static waypoint data and publishes to the */base_waypoints* topic.  
-**Waypoint Follower** package subscribes to the */final_waypoints* topic and publishes target vehicle linear and angular velocities in the form of twist commands to the */twist_cmd* topic. The Waypoint Follower package is provided by [Autoware](https://github.com/Autoware-AI/autoware.ai).   
-**Waypoint Updater** package contains the file **waypoint_updater.py** which updates the target velocity for each waypoint based on traffic light and obstacle detection data. The Waypoint Updater node subscribes to the */base_waypoints*, */current_pose*, */obstacle_waypoint* and */traffic_waypoint* topics and publishes a list of waypoints ahead of the car with target velocities to the */final_waypoints* topic.
+### Planning
 
-### Traffic Light Detector & Classifier
-**Traffic Light Detector** package contains the code for the Traffic Light Detection node **tl_detector.py**.  This node subscribes to */image_color*, */current_pose* and */base_waypoints* topics and publishes the locations to stop for red traffic lights to the */traffic_waypoint* topic.  The */current_pose* topic provides the vehicle's current position and */base_waypoints* provides a complete list of waypoints for the car to follow.  **TLDetector** class subscribes to the */image_color* topic that holds a stream of images captured by the camera on the front of the vehicle.  When a traffic light is detected in an image, the traffic light is cropped out and the color of the traffic light is detected by calling the get_classification() method of the TLClassifier class. If the traffic light color (red or yellow) requires the vehicle to slow down or stop, an event is published to the */traffic_waypoint* topic to be processed by the Waypoint Updater node.    
-**Traffic Light Classification** model is a sub_package defined in file **tl_classifier.py**. **TLClassifier** class uses the **ssd_mobilenet_v1_coco** model from the [TensorFlow 1 Detection Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1_detection_zoo.md) that had been previously trained with the [LISA Traffic Light](https://www.kaggle.com/mbornoe/lisa-traffic-light-dataset) dataset of real-world traffic light images captured in San Diego, USA. TLClassifier get_classification() method calls extract_red_area() method to determine if the image contains a red light and passes the result back to TLDetector class.
+**Waypoint Loader** package loads the static waypoint data and publishes to the */base_waypoints* topic.  
+
+**Waypoint Follower** package subscribes to the */final_waypoints* topic and publishes target vehicle linear and angular velocities in the form of twist commands to the */twist_cmd* topic. The Waypoint Follower package is provided by [Autoware](https://github.com/Autoware-AI/autoware.ai).   
+
+**Waypoint Updater** package contains the file **waypoint_updater.py** which updates the target velocity for each waypoint based on traffic light and obstacle detection data. The Waypoint Updater node publishes a list of waypoints ahead of the car with target velocities to the */final_waypoints* topic.
+Input for the nodes comes from subscriptions to these topics:
+
+- */base_waypoints*
+- */current_pose*
+- */obstacle_waypoint*
+- */traffic_waypoint*
+
+### Perception
+
+**Traffic Light Detector** package contains the code for the Traffic Light Detection node **tl_detector.py**.  This node subscribes to */image_color*, */current_pose* and */base_waypoints* topics and publishes the locations to stop for red traffic lights to the */traffic_waypoint* topic.  The */current_pose* topic provides the vehicle's current position and */base_waypoints* provides a complete list of waypoints for the car to follow.  
+
+**TLDetector** class subscribes to the */image_color* topic that holds a stream of images captured by the camera on the front of the vehicle.  When a traffic light is detected in an image, the traffic light is cropped out and the color of the traffic light is detected by calling the get_classification() method of the TLClassifier class. If the traffic light color (red or yellow) requires the vehicle to slow down or stop, an event is published to the */traffic_waypoint* topic to be processed by the Waypoint Updater node.    
+
+**Traffic Light Classification** model is a sub_package defined in file **tl_classifier.py**. **TLClassifier** class uses the **ssd_mobilenet_v1_coco** model from the [TensorFlow 1 Detection Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1_detection_zoo.md) that had been previously trained with the [COCO Dataset](https://cocodataset.org/) of real-world traffic light images captured in San Diego, USA.
+
+Camera image classification is done in two stages:
+
+- Segmentation - first traffic light objects are cropped out of the image using the TensorFlow model.
+- Light Detection - using heuristic method red colour are detected in the traffic light crop.  
+
 
 ### Styx and Styx Messages
+
 **Styx** package contains a server for communicating with the simulator and a bridge to translate and publish simulator messages to ROS topics.    
 **Styx Messages** package includes definitions of the custom ROS message types used in the project.
 
 ---
 ## Rosbag test
+
 After submission of the project, the Udacity review team will test our project code on their instance of the driving simulator and Carla, the Udacity real-world self driving car, if  current COVID conditions allow.  Udacity will provide a Rosbag dataset from their version of the driving simulator which we will be able to use to check that a self driving car running our project code drives safely under restricted conditions and responds to real-world traffic light images.
 
 ---
