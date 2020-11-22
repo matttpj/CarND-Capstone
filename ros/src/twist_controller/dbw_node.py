@@ -113,7 +113,7 @@ class DBWNode(object):
         self.angular_vel = msg.twist.angular.z
 
     def velocity_cb(self, msg):
-        if !self.launch_time:
+        if not self.launch_time:
              self.launch_time = rospy.get_time()
 
         self.current_vel = msg.twist.linear.x
