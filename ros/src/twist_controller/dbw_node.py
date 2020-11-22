@@ -94,7 +94,7 @@ class DBWNode(object):
                                                                                    self.linear_vel,
                                                                                    self.angular_vel)
             if self.dbw_enabled:
-                if not is_ready_to_control():
+                if not self.is_ready_to_control():
                     # We don't want to control the car before
                     # sensor informatin is available
                     self.publish(0, 0, 0)
