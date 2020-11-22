@@ -96,7 +96,7 @@ class DBWNode(object):
             if self.dbw_enabled:
                 launch_sleep_sec = 1.0
 
-                if current_time - self.launch_time < launch_sleep_sec:
+                if rospy.get_time() - self.launch_time < launch_sleep_sec:
                     # We don't want to control the car before
                     # sensor informatin is available
                     self.publish(0, 0, 0)
