@@ -13,7 +13,7 @@ This is the project repo for our team's final project of the Udacity Self-Drivin
 
 [//]: # (Image References)
 __Output from driving simulator__  
-<img src="./imgs/capstone_car_stopped.jpg" width=100% height=100%>
+<img src="./imgs/CarND-Capstone_v03.gif" width=100% height=100%>
 [download video](https://github.com/erik-rosen/CarND-Capstone/raw/master/output_videos/capstone_v02.mp4)
 
 ## System architecture
