@@ -28,6 +28,8 @@ class TLDetector(object):
         self.camera_image = None
         self.lights = []
 
+        self.light_classifier = TLClassifier()
+
         # Image object from the image_color topic needs to be converted to numpy array for Tensorflow
         # We are going to send "bgr8" layers to tl_classifier.
         # http://library.isr.ist.utl.pt/docs/roswiki/cv_bridge(2f)Tutorials(2f)ConvertingBetweenROSImagesAndOpenCVImagesPython.html
@@ -54,7 +56,6 @@ class TLDetector(object):
         self.tl_detector_ready = rospy.Publisher('/tl_detector_ready', Bool, queue_size=1, latch = True)
 
         self.bridge = CvBridge()
-        self.light_classifier = TLClassifier()
         self.listener = tf.TransformListener()
 
         self.state = TrafficLight.UNKNOWN
