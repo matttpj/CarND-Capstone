@@ -63,7 +63,6 @@ class TLDetector(object):
         self.last_wp = -1
         self.state_count = 0
 
-        self.tl_detector_ready.publish(Bool(True))
         rospy.spin()
 
     def pose_cb(self, msg):
@@ -108,6 +107,7 @@ class TLDetector(object):
             state = self.light_classifier.get_classification(img_crop)
 
         self.update_state(state)
+        self.tl_detector_ready.publish(Bool(True))
 
 
 
