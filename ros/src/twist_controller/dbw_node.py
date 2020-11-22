@@ -53,7 +53,7 @@ class DBWNode(object):
         self.brake_pub = rospy.Publisher('/vehicle/brake_cmd',
                                          BrakeCmd, queue_size=1)
 
-    
+
         # TODO: Create `Controller` object
         self.controller = Controller(vehicle_mass=vehicle_mass,
                                     fuel_capacity=fuel_capacity,
@@ -79,7 +79,7 @@ class DBWNode(object):
         self.linear_vel = None
         self.angular_vel = None
         self.throttle = self.steering = self.brake = 0
-
+        self.launch_time = None
 
         self.loop()
 
@@ -94,7 +94,15 @@ class DBWNode(object):
                                                                                    self.linear_vel,
                                                                                    self.angular_vel)
             if self.dbw_enabled:
-              self.publish(self.throttle, self.brake, self.steering)
+                launch_sleep_sec = 1.0
+
+                if current_time - self.launch_time < launch_sleep_sec:
+                    # We don't want to control the car before
+                    # sensor informatin is available
+                    self.publish(0, 0, 0)
+                else:
+                    # Return throttle, brake, steer
+                    self.publish(self.throttle, self.brake, self.steering)
             rate.sleep()
 
     def dbw_enabled_cb(self, msg):
@@ -105,6 +113,9 @@ class DBWNode(object):
         self.angular_vel = msg.twist.angular.z
 
     def velocity_cb(self, msg):
+        if !self.launch_time:
+             self.launch_time = rospy.get_time()
+
         self.current_vel = msg.twist.linear.x
 
     def publish(self, throttle, brake, steer):
