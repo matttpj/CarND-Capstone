@@ -94,9 +94,7 @@ class DBWNode(object):
                                                                                    self.linear_vel,
                                                                                    self.angular_vel)
             if self.dbw_enabled:
-                launch_sleep_sec = 1.0
-
-                if rospy.get_time() - self.launch_time < launch_sleep_sec:
+                if not is_ready_to_control():
                     # We don't want to control the car before
                     # sensor informatin is available
                     self.publish(0, 0, 0)
@@ -104,6 +102,10 @@ class DBWNode(object):
                     # Return throttle, brake, steer
                     self.publish(self.throttle, self.brake, self.steering)
             rate.sleep()
+
+    def is_ready_to_control():
+        launch_sleep_sec = 1.0
+        return self.launch_time is not None and rospy.get_time() - self.launch_time < launch_sleep_sec
 
     def dbw_enabled_cb(self, msg):
         self.dbw_enabled = msg
