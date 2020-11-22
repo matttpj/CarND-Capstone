@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, Bool
 from geometry_msgs.msg import PoseStamped, Pose
 from styx_msgs.msg import TrafficLightArray, TrafficLight
 from styx_msgs.msg import Lane
@@ -28,6 +28,8 @@ class TLDetector(object):
         self.camera_image = None
         self.lights = []
 
+        self.light_classifier = TLClassifier()
+
         # Image object from the image_color topic needs to be converted to numpy array for Tensorflow
         # We are going to send "bgr8" layers to tl_classifier.
         # http://library.isr.ist.utl.pt/docs/roswiki/cv_bridge(2f)Tutorials(2f)ConvertingBetweenROSImagesAndOpenCVImagesPython.html
@@ -51,10 +53,9 @@ class TLDetector(object):
 
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
 
-        self.image_crop = rospy.Publisher('/image_crop', Image, queue_size=1)
+        self.tl_detector_ready = rospy.Publisher('/tl_detector_ready', Bool, queue_size=1, latch = True)
 
         self.bridge = CvBridge()
-        self.light_classifier = TLClassifier()
         self.listener = tf.TransformListener()
 
         self.state = TrafficLight.UNKNOWN
@@ -103,10 +104,10 @@ class TLDetector(object):
             state = TrafficLight.UNKNOWN
         else:
             img_crop_msg = self.cv_bridge.cv2_to_imgmsg(img_crop, encoding="bgr8")
-            self.image_crop.publish(img_crop_msg)
             state = self.light_classifier.get_classification(img_crop)
 
         self.update_state(state)
+        self.tl_detector_ready.publish(Bool(True))
 
 
 

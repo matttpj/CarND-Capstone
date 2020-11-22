@@ -56,6 +56,14 @@ Camera image classification is done in two stages:
 - Segmentation - first traffic light objects are cropped out of the image using the TensorFlow model.
 - Light Detection - using heuristic method red colour are detected in the traffic light crop.  
 
+### System launch
+
+To improve car behaviour on system launch we have introduced `\tl_detector_ready` topic that gets Bool messages
+from `tl_detector` node once the first image is processed.
+
+`waypoint_updater` will publish waypoints only once first message is received from `tl_detector` which can take some time
+because of the Tensorlfow session initiation. 
+
 
 ### Styx and Styx Messages
 
